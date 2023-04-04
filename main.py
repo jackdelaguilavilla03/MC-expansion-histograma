@@ -1,11 +1,9 @@
 import tkinter as tk
 from tkinter import filedialog
-from PIL import ImageTk
-import histograma
-import image_processing
-
+from PIL import ImageTk, Image
+import cv2
+import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 class VentanaPrincipal(tk.Frame):
     def __init__(self, master=None):
@@ -30,52 +28,41 @@ class VentanaPrincipal(tk.Frame):
     def cargar_imagen(self):
         ruta_imagen = filedialog.askopenfilename(filetypes=[("Imagenes", "*.png;*.jpg;*.jpeg;*.bmp")])
         if ruta_imagen:
-            self.imagen_original = image_processing.procesar_imagen(ruta_imagen)
-            imagen_redimensionada = self.imagen_original.resize((500, 500))  # Cambia las dimensiones a lo que necesites
-            self.imagen_tk = ImageTk.PhotoImage(imagen_redimensionada)
+            self.imagen_original = Image.open(ruta_imagen)
+            self.imagen_original.thumbnail((400, 400))
+            self.imagen_tk = ImageTk.PhotoImage(self.imagen_original)
             self.imagen_label.config(image=self.imagen_tk)
-            self.histograma_original = histograma.obtener_histograma(imagen_redimensionada)
+            self.histograma_original = cv2.calcHist([np.array(self.imagen_original.convert('L'))], [0], None, [256], [0, 256])
             self.graficar_histograma(self.histograma_original)
 
     def expandir_histograma(self):
-        imagen_expandida = image_processing.expandir_histograma(self.imagen_original)
-        histograma_expandido = histograma.obtener_histograma(imagen_expandida)
-        self.imagen_expandida_tk = ImageTk.PhotoImage(imagen_expandida)
-
-        # Crear figura con dos subplots
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 5))
-
-        # Mostrar imagen original en el primer subplot
-        ax1.imshow(self.imagen_original, cmap="gray")
-        ax1.set_title("Imagen original")
-
-        # Mostrar imagen expandida en el segundo subplot
-        ax2.imshow(imagen_expandida, cmap="gray")
-        ax2.set_title("Imagen expandida")
-
-        # Mostrar histograma expandido debajo del segundo subplot
-        canvas = FigureCanvasTkAgg(fig, master=self)
-        canvas.get_tk_widget().pack()
-        ax3 = fig.add_subplot(3, 1, 3)
-        ax3.bar(range(len(histograma_expandido)), histograma_expandido)
-        ax3.set_title("Histograma expandido")
-
-        canvas.draw()
+        imagen_gris = np.array(self.imagen_original.convert('L'))
+        imagen_expandida = cv2.equalizeHist(imagen_gris)
+        self.imagen_expandida = Image.fromarray(imagen_expandida)
+        self.imagen_expandida.thumbnail((400, 400))
+        self.imagen_expandida_tk = ImageTk.PhotoImage(self.imagen_expandida)
+        self.imagen_label.config(image=self.imagen_expandida_tk)
+        histograma_expandido = cv2.calcHist([imagen_expandida], [0], None, [256], [0, 256])
+        self.graficar_histograma(histograma_expandido)
 
     def graficar_histograma(self, histograma):
-        canvas = tk.Canvas(self.histograma_label, width=400, height=200)
-        canvas.pack()
-        for i, valor in enumerate(histograma):
-            x0 = i * 4
-            y0 = 200 - (valor * 200 / max(histograma))
-            x1 = (i + 1) * 4
-            y1 = 200
-            canvas.create_rectangle(x0, y0, x1, y1, fill="gray")
-        canvas.update()
+        plt.clf()
+        plt.plot(histograma)
+        plt.title("Histograma")
+        plt.xlim([0, 256])
+        plt.ylim([0, 5000])
+        plt.xlabel("Intensidad de pixel")
+        plt.ylabel("Cantidad de pixels")
+        plt.tight_layout()
+        plt.savefig('histograma.png')
+        histograma_imagen = Image.open('histograma.png')
+        histograma_imagen.thumbnail((300, 150))
+        histograma_imagen_tk = ImageTk.PhotoImage(histograma_imagen)
+        self.histograma_label.config(image=histograma_imagen_tk)
+        self.histograma_label.image = histograma_imagen_tk
 
 
 root = tk.Tk()
 root.geometry("700x800")
 app = VentanaPrincipal(master=root)
 app.mainloop()
-
