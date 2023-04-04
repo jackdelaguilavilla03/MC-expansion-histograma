@@ -28,32 +28,41 @@ class VentanaPrincipal(tk.Frame):
     def cargar_imagen(self):
         ruta_imagen = filedialog.askopenfilename(filetypes=[("Imagenes", "*.png;*.jpg;*.jpeg;*.bmp")])
         if ruta_imagen:
-            self.imagen_original = cv2.imread(ruta_imagen, cv2.IMREAD_GRAYSCALE)
-            self.imagen_tk = ImageTk.PhotoImage(Image.fromarray(self.imagen_original).resize((400, 400)))
+            self.imagen_original = Image.open(ruta_imagen)
+            self.imagen_original.thumbnail((400, 400))
+            self.imagen_tk = ImageTk.PhotoImage(self.imagen_original)
             self.imagen_label.config(image=self.imagen_tk)
-            self.histograma_original = cv2.calcHist([self.imagen_original], [0], None, [256], [0,256])
+            self.histograma_original = cv2.calcHist([np.array(self.imagen_original.convert('L'))], [0], None, [256], [0, 256])
             self.graficar_histograma(self.histograma_original)
 
     def expandir_histograma(self):
-        imagen_expandida = cv2.equalizeHist(self.imagen_original)
-        histograma_expandido = cv2.calcHist([imagen_expandida], [0], None, [256], [0,256])
-        imagen_expandida_tk = ImageTk.PhotoImage(Image.fromarray(imagen_expandida).resize((400, 400)))
-        self.imagen_label.config(image=imagen_expandida_tk)
+        imagen_gris = np.array(self.imagen_original.convert('L'))
+        imagen_expandida = cv2.equalizeHist(imagen_gris)
+        self.imagen_expandida = Image.fromarray(imagen_expandida)
+        self.imagen_expandida.thumbnail((400, 400))
+        self.imagen_expandida_tk = ImageTk.PhotoImage(self.imagen_expandida)
+        self.imagen_label.config(image=self.imagen_expandida_tk)
+        histograma_expandido = cv2.calcHist([imagen_expandida], [0], None, [256], [0, 256])
         self.graficar_histograma(histograma_expandido)
 
     def graficar_histograma(self, histograma):
         plt.clf()
-        plt.bar(range(256), histograma.ravel())
+        plt.plot(histograma)
+        plt.title("Histograma")
         plt.xlim([0, 256])
+        plt.ylim([0, 5000])
         plt.xlabel("Intensidad de pixel")
-        plt.ylabel("Frecuencia")
+        plt.ylabel("Cantidad de pixels")
         plt.tight_layout()
-        plt.savefig("histograma.png")
-        histograma_tk = ImageTk.PhotoImage(Image.open("histograma.png").resize((400, 200)))
-        self.histograma_label.config(image=histograma_tk)
-        self.histograma_label.image = histograma_tk
+        plt.savefig('histograma.png')
+        histograma_imagen = Image.open('histograma.png')
+        histograma_imagen.thumbnail((300, 150))
+        histograma_imagen_tk = ImageTk.PhotoImage(histograma_imagen)
+        self.histograma_label.config(image=histograma_imagen_tk)
+        self.histograma_label.image = histograma_imagen_tk
+
 
 root = tk.Tk()
-root.geometry("900x500")
+root.geometry("700x800")
 app = VentanaPrincipal(master=root)
 app.mainloop()
