@@ -37,22 +37,18 @@ class VentanaPrincipal(tk.Frame):
         #     self.histograma_original = cv2.calcHist([np.array(self.imagen_original.convert('L'))], [0], None, [256],
         #                                             [0, 256])
         #     self.graficar_histograma(self.histograma_original)
-        carpeta_imagen = filedialog.askdirectory()
-        if carpeta_imagen:
-            nombres_archivos = os.listdir(carpeta_imagen)
-            for nombre_archivo in nombres_archivos:
-                if nombre_archivo.endswith(".png") or nombre_archivo.endswith(".jpg") or nombre_archivo.endswith(
-                        ".jpeg") or nombre_archivo.endswith(".bmp"):
-                    ruta_imagen = os.path.join(carpeta_imagen, nombre_archivo)
-                    self.imagen_original = Image.open(ruta_imagen)
-                    self.imagen_original.thumbnail((400, 400))
-                    self.imagen_tk = ImageTk.PhotoImage(self.imagen_original)
-                    self.imagen_label.config(image=self.imagen_tk)
-                    self.histograma_original = cv2.calcHist([np.array(self.imagen_original.convert('L'))], [0], None,
-                                                            [256],
-                                                            [0, 256])
-                    self.graficar_histograma(self.histograma_original)
-                    break
+        ruta_archivo = filedialog.askopenfilename()
+        if ruta_archivo:
+            if os.path.isfile(ruta_archivo) and (
+                    ruta_archivo.endswith(".png") or ruta_archivo.endswith(".jpg") or ruta_archivo.endswith(
+                    ".jpeg") or ruta_archivo.endswith(".bmp")):
+                self.imagen_original = Image.open(ruta_archivo)
+                self.imagen_original.thumbnail((400, 400))
+                self.imagen_tk = ImageTk.PhotoImage(self.imagen_original)
+                self.imagen_label.config(image=self.imagen_tk)
+                self.histograma_original = cv2.calcHist([np.array(self.imagen_original.convert('L'))], [0], None, [256],
+                                                        [0, 256])
+                self.graficar_histograma(self.histograma_original)
 
     def expandir_histograma(self):
         imagen_gris = np.array(self.imagen_original.convert('L'))
