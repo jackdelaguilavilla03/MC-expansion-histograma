@@ -4,6 +4,8 @@ from PIL import ImageTk, Image
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+import os
+
 
 class VentanaPrincipal(tk.Frame):
     def __init__(self, master=None):
@@ -26,14 +28,31 @@ class VentanaPrincipal(tk.Frame):
         self.expander_boton.pack(side="right")
 
     def cargar_imagen(self):
-        ruta_imagen = filedialog.askopenfilename(filetypes=[("Imagenes", "*.png;*.jpg;*.jpeg;*.bmp")])
-        if ruta_imagen:
-            self.imagen_original = Image.open(ruta_imagen)
-            self.imagen_original.thumbnail((400, 400))
-            self.imagen_tk = ImageTk.PhotoImage(self.imagen_original)
-            self.imagen_label.config(image=self.imagen_tk)
-            self.histograma_original = cv2.calcHist([np.array(self.imagen_original.convert('L'))], [0], None, [256], [0, 256])
-            self.graficar_histograma(self.histograma_original)
+        # ruta_imagen = filedialog.askopenfilename(filetypes=[("Imagenes", "*.png;*.jpg;*.jpeg;*.bmp")])
+        # if ruta_imagen:
+        #     self.imagen_original = Image.open(ruta_imagen)
+        #     self.imagen_original.thumbnail((400, 400))
+        #     self.imagen_tk = ImageTk.PhotoImage(self.imagen_original)
+        #     self.imagen_label.config(image=self.imagen_tk)
+        #     self.histograma_original = cv2.calcHist([np.array(self.imagen_original.convert('L'))], [0], None, [256],
+        #                                             [0, 256])
+        #     self.graficar_histograma(self.histograma_original)
+        carpeta_imagen = filedialog.askdirectory()
+        if carpeta_imagen:
+            nombres_archivos = os.listdir(carpeta_imagen)
+            for nombre_archivo in nombres_archivos:
+                if nombre_archivo.endswith(".png") or nombre_archivo.endswith(".jpg") or nombre_archivo.endswith(
+                        ".jpeg") or nombre_archivo.endswith(".bmp"):
+                    ruta_imagen = os.path.join(carpeta_imagen, nombre_archivo)
+                    self.imagen_original = Image.open(ruta_imagen)
+                    self.imagen_original.thumbnail((400, 400))
+                    self.imagen_tk = ImageTk.PhotoImage(self.imagen_original)
+                    self.imagen_label.config(image=self.imagen_tk)
+                    self.histograma_original = cv2.calcHist([np.array(self.imagen_original.convert('L'))], [0], None,
+                                                            [256],
+                                                            [0, 256])
+                    self.graficar_histograma(self.histograma_original)
+                    break
 
     def expandir_histograma(self):
         imagen_gris = np.array(self.imagen_original.convert('L'))
@@ -63,6 +82,6 @@ class VentanaPrincipal(tk.Frame):
 
 
 root = tk.Tk()
-root.geometry("700x800")
+root.geometry("700x500")
 app = VentanaPrincipal(master=root)
 app.mainloop()
