@@ -28,15 +28,6 @@ class VentanaPrincipal(tk.Frame):
         self.expander_boton.pack(side="right")
 
     def cargar_imagen(self):
-        # ruta_imagen = filedialog.askopenfilename(filetypes=[("Imagenes", "*.png;*.jpg;*.jpeg;*.bmp")])
-        # if ruta_imagen:
-        #     self.imagen_original = Image.open(ruta_imagen)
-        #     self.imagen_original.thumbnail((400, 400))
-        #     self.imagen_tk = ImageTk.PhotoImage(self.imagen_original)
-        #     self.imagen_label.config(image=self.imagen_tk)
-        #     self.histograma_original = cv2.calcHist([np.array(self.imagen_original.convert('L'))], [0], None, [256],
-        #                                             [0, 256])
-        #     self.graficar_histograma(self.histograma_original)
         ruta_archivo = filedialog.askopenfilename()
         if ruta_archivo:
             if os.path.isfile(ruta_archivo) and (
@@ -78,6 +69,6 @@ class VentanaPrincipal(tk.Frame):
 
 
 root = tk.Tk()
-root.geometry("700x500")
+root.geometry("700x600")
 app = VentanaPrincipal(master=root)
 app.mainloop()
