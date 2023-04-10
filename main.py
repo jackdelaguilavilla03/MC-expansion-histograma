@@ -58,8 +58,9 @@ class VentanaPrincipal(tk.Frame):
         imagen_gris = np.array(self.imagen_original.convert('L'))
         min_pixel = np.min(imagen_gris)
         max_pixel = np.max(imagen_gris)
-        imagen_expandida = (imagen_gris - min_pixel) * (255 / (max_pixel - min_pixel))
-        imagen_expandida = imagen_expandida.astype(np.uint8)  # convert the data type to uint8
+        a = 255.0 / (max_pixel - min_pixel)
+        b = -a * min_pixel
+        imagen_expandida = (a * imagen_gris + b).astype(np.uint8)
         self.imagen_expandida = Image.fromarray(imagen_expandida)
         self.imagen_expandida.thumbnail((400, 400))
         self.imagen_expandida_tk = ImageTk.PhotoImage(self.imagen_expandida)
