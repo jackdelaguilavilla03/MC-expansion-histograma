@@ -30,6 +30,9 @@ class VentanaPrincipal(tk.Frame):
         self.equal_boton = tk.Button(self,text="Expandir histograma", command=self.expandir_histograma)
         self.equal_boton.pack(side="right")
 
+        self.original_boton = tk.Button(self, text="Imagen original", command=self.imagen_sin_filtro)
+        self.original_boton.pack(side="right")
+
     def cargar_imagen(self):
         ruta_archivo = filedialog.askopenfilename()
         if ruta_archivo:
@@ -38,7 +41,7 @@ class VentanaPrincipal(tk.Frame):
                     ".jpeg") or ruta_archivo.endswith(".bmp")):
                 self.imagen_original = Image.open(ruta_archivo)
                 self.imagen_original.thumbnail((400, 400))
-                self.imagen_tk = ImageTk.PhotoImage(self.imagen_original)
+                self.imagen_tk = ImageTk.PhotoImage(self.imagen_original.convert('L'))
                 self.imagen_label.config(image=self.imagen_tk)
                 self.histograma_original = cv2.calcHist([np.array(self.imagen_original.convert('L'))], [0], None, [256],
                                                         [0, 256])
@@ -67,6 +70,14 @@ class VentanaPrincipal(tk.Frame):
         self.imagen_label.config(image=self.imagen_expandida_tk)
         histograma_expandido = cv2.calcHist([imagen_expandida], [0], None, [256], [0, 256])
         self.graficar_histograma(histograma_expandido)
+
+    def imagen_sin_filtro(self):
+        self.imagen_tk = ImageTk.PhotoImage(self.imagen_original.convert('L'))
+        self.imagen_label.config(image=self.imagen_tk)
+        self.histograma_original = cv2.calcHist([np.array(self.imagen_original.convert('L'))], [0], None, [256],
+                                            [0, 256])
+        self.graficar_histograma(self.histograma_original)
+
 
     def graficar_histograma(self, histograma):
         plt.clf()
