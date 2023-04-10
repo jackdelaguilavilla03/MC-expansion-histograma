@@ -24,8 +24,11 @@ class VentanaPrincipal(tk.Frame):
         self.cargar_boton = tk.Button(self, text="Cargar imagen", command=self.cargar_imagen)
         self.cargar_boton.pack(side="left")
 
-        self.expander_boton = tk.Button(self, text="Expandir histograma", command=self.expandir_histograma)
+        self.expander_boton = tk.Button(self, text="Ecualizar histograma", command=self.ecualizar_histograma)
         self.expander_boton.pack(side="right")
+
+        self.equal_boton = tk.Button(self,text="Expandir histograma", command=self.expandir_histograma)
+        self.equal_boton.pack(side="right")
 
     def cargar_imagen(self):
         ruta_archivo = filedialog.askopenfilename()
@@ -41,9 +44,22 @@ class VentanaPrincipal(tk.Frame):
                                                         [0, 256])
                 self.graficar_histograma(self.histograma_original)
 
+    def ecualizar_histograma(self):
+        imagen_gris = np.array(self.imagen_original.convert('L'))
+        imagen_ecualizada = cv2.equalizeHist(imagen_gris)
+        self.imagen_ecualizada = Image.fromarray(imagen_ecualizada)
+        self.imagen_ecualizada.thumbnail((400, 400))
+        self.imagen_ecualizada_tk = ImageTk.PhotoImage(self.imagen_ecualizada)
+        self.imagen_label.config(image=self.imagen_ecualizada_tk)
+        histograma_ecualizado = cv2.calcHist([imagen_ecualizada], [0], None, [256], [0, 256])
+        self.graficar_histograma(histograma_ecualizado)
+
     def expandir_histograma(self):
         imagen_gris = np.array(self.imagen_original.convert('L'))
-        imagen_expandida = cv2.equalizeHist(imagen_gris)
+        min_pixel = np.min(imagen_gris)
+        max_pixel = np.max(imagen_gris)
+        imagen_expandida = (imagen_gris - min_pixel) * (255 / (max_pixel - min_pixel))
+        imagen_expandida = imagen_expandida.astype(np.uint8)  # convert the data type to uint8
         self.imagen_expandida = Image.fromarray(imagen_expandida)
         self.imagen_expandida.thumbnail((400, 400))
         self.imagen_expandida_tk = ImageTk.PhotoImage(self.imagen_expandida)
