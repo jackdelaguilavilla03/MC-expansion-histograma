@@ -1,3 +1,6 @@
 *.png
+.env
+.dist
 histograma.py
 image_processing.py
+main.spec
